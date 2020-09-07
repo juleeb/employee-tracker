@@ -20,13 +20,13 @@ CREATE TABLE role (
 );
 
 CREATE TABLE employee (
-  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
   role_id INT NOT NULL,
   INDEX role_index (role_id),
   CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE,
-  manager_id INT UNSIGNED,
+  manager_id INT,
   INDEX manager_index (manager_id),
   CONSTRAINT fk_manager FOREIGN KEY (manager_id) REFERENCES employee(id) ON DELETE SET NULL
 );
@@ -94,6 +94,4 @@ UPDATE employee
 SET role_id = 5
 WHERE last_name = "Spoon";
 
-SET SQL_SAFE_UPDATES = 0;
-
-SELECT CONCAT (first_name," ",last_name) AS full_name, (id) FROM employee;
+SET SQL_SAFE_UPDATES = 0
