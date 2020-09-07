@@ -24,7 +24,7 @@ Installation Guide:
 
 1. Run npm install to install all dependencies.
 
-<img src="assets/npm.gif" width="600" height="300">
+<img src="assets/install.gif" width="600" height="300">
 
 2. Run schema.sql in MySQL Workbench and input data (optional: seeds.sql contains dummy data).
 3. Edit MySQL connection properties in the connectionProperties object in server.js
