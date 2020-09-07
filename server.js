@@ -1,11 +1,13 @@
+//dependencies
 const inquirer = require("inquirer");
 const logo = require("asciiart-logo");
 const connection = require("./db/connection");
 const db = require("./db");
+const { async } = require("rxjs");
 
+require("console.table");
 
-//require("console.table");
-
+//inquirer propmts and promises
 const prompts = {
 
   mainPrompt: [
@@ -45,6 +47,18 @@ const prompts = {
       {
         name: "View All Departments",
         value: "view_departments"
+      },
+      {
+        name: "Delete Employee",
+        value: "delete_employee"
+      },
+      {
+        name: "Delete Role",
+        value: "delete_role"
+      },
+      {
+        name: "Delete Department",
+        value: "delete_department"
       },
       {
         name: "Exit",
@@ -131,6 +145,7 @@ async function runApp() {
 
     const { choice } = await inquirer.prompt(prompts.mainPrompt);
 
+//switch statements for user choice
     switch(choice) {
 
     case "view_employees":
@@ -164,22 +179,36 @@ async function runApp() {
     
     case "update_role":
         const empList = await db.firstLastName();
-        console.log(empList);
         const roleList = await viewAllRoles();
         updateEmployeeRole(empList, roleList);
         break;
     
     case "view_departments":
         const departments = await viewDepartments();
-        console.table(departments)
         break;
     
-        case "exit":
-        connection.end();
+    case "delete_employee":
+        const deleteempl = await db.firstLastName();
+        deletelistemp(deleteempl);
         break;
+    
+    case "delete_role":
+        const deleterole = await viewAllRoles();
+        deletelistrole(deleterole);
+        break;
+    
+    case "delete_department":
+      const deletedepart = await viewDepartments();
+      deletelistdepart(deletedepart);
+      break;
+
+    case "exit":
+      connection.end();
+      break;
     }
 }
 
+//functions associated with switch statement
 async function viewEmployeesRoles() {
     const roles = await db.viewAllRoles();
     inquirer
@@ -296,18 +325,76 @@ async function updateEmployeeRole(empList, empRole) {
             choices: empRole.map(e=> ({name: e.title, value: e.id}))
         }
     ]);
-    
-    console.log(updateData);
-    console.log(updateData.id);
-    console.log(updateData.role_id);
     const result = connection.query
         (`
-        UPDATE employee SET role_id = ${updateData.role_id} WHERE id = ${updateData.id};`,function (err, res) {
+        UPDATE employee SET role_id = ${updateData.role_id} WHERE id = ${updateData.id};`,
+          function (err, res) {
             if (err) throw err;
-        }
-        );
+        });
         const newemp = await db.viewAllEmployees();
         console.table(newemp);
+        
+        runApp();
+}
+
+async function deletelistemp(deleteempl) {
+  const deleteEmpData = await inquirer.prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which employee would you like to delete?",
+      choices: deleteempl.map(f=> ({name: f.full_name , value: f.id}))
+    }
+  ]);
+  const resultDelete = connection.query
+    (`DELETE FROM employee WHERE id = ${deleteEmpData.id};`,
+      function (err, res) {
+        if (err) throw err;
+      });
+      const deleteempL = await db.viewAllEmployees();
+      console.table(deleteempL);
+
+      runApp();
+}
+
+async function deletelistrole(deleterole) {
+  const deleteRoleData = await inquirer.prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which role would to like to delete?",
+      choices: deleterole.map(g=> ({name: g.title , value: g.id}))
+    }
+  ]);
+  const resultDeleteRole = connection.query
+    (`DELETE FROM role WHERE id = ${deleteRoleData.id};`,
+    function (err, res) {
+      if (err) throw err;
+    });
+    const deleteroleL = await viewAllRoles();
+    console.table(deleteroleL);
+
+    runApp();
+}
+
+async function deletelistdepart(deletedepart) {
+  const deleteDepartData = await inquirer.prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which department would to like to delete?",
+      choices: deletedepart.map(h=> ({name: h.name , value: h.id}))
+    }
+  ]);
+  const resultDeleteDepart = connection.query
+    (`DELETE FROM department WHERE id = ${deleteDepartData.id};`,
+    function (err, res) {
+      if (err) throw err;
+    });
+    const deletedepartL = await viewDepartments();
+    console.table(deletedepartL);
+
+    runApp();
 }
 
 runApp();

@@ -1,5 +1,7 @@
+//dependency
 const connection = require('./connection');
 
+//constructors to hold queries for database
 class DB {
     constructor(connection) {
         this.connection = connection;
@@ -70,28 +72,6 @@ class DB {
         , obj);
     }
 
-    // addEmployee() {
-    //     return this.connection.query(
-    //         `
-    //         INSERT INTO employee 
-    //         SET
-    //         first_name =  "이름",
-    //         last_name = "이름",
-    //         role_id = 롤아이디매치,
-    //         manager_id = 매니저아이디매치; 
-    //         `
-    //     );
-    // }
-
-    // updateEmployeeRole(a, b) {
-    //     const update = {};
-    //     return this.connection.query
-    //     (`
-    //     UPDATE employee SET role_id = ? WHERE id = ?;`, 
-    //     [update., update.b]
-    //     );
-    // }
-
     firstLastName() {
         return this.connection.query(
             `
@@ -99,6 +79,6 @@ class DB {
             `
         )
     }
-}//지우지말것
+}
 
 module.exports = new DB(connection);
