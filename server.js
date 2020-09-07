@@ -45,10 +45,6 @@ const prompts = {
         value: "update_role"
       }, 
       {
-        name: "View All Departments",
-        value: "view_departments"
-      },
-      {
         name: "Delete Employee",
         value: "delete_employee"
       },
@@ -111,7 +107,7 @@ roleAdd: [
 departmentAdd: [
 {
   type: "input",
-  name: "newdepartment",
+  name: "name",
   message: "Enter new department name."
 }
 ],
@@ -135,15 +131,18 @@ addEmployee: [
 ]
 }
 
+console.log("\n");
+console.log(
+  logo({
+    name: "Employee Tracker Database",
+    logoColor: 'bold-green'
+    })
+    .render()
+    );
+console.log("\n");
+
 async function runApp() {
-
-    const titles = "DATABASE";
-
-    console.log("\n");
-    console.log(titles);
-    console.log("\n");
-
-    const { choice } = await inquirer.prompt(prompts.mainPrompt);
+  const { choice } = await inquirer.prompt(prompts.mainPrompt);
 
 //switch statements for user choice
     switch(choice) {
@@ -164,7 +163,6 @@ async function runApp() {
       
     case "add_employee":
         const empRole = await viewAllRoles();
-        console.log(empRole);
         addEmployee(empRole);
         break;
       
@@ -198,14 +196,22 @@ async function runApp() {
         break;
     
     case "delete_department":
-      const deletedepart = await viewDepartments();
-      deletelistdepart(deletedepart);
-      break;
+        const deletedepart = await viewDepartments();
+        deletelistdepart(deletedepart);
+        break;
 
     case "exit":
-      connection.end();
-      break;
+        connection.end();
+        break;
     }
+}
+
+function viewDepartments(){
+  return connection.query(`SELECT * FROM department`);
+}
+
+function viewAllRoles(){
+  return connection.query(`SELECT * FROM role`);
 }
 
 //functions associated with switch statement
@@ -231,12 +237,11 @@ async function viewEmployeesRoles() {
       WHERE ?;
       `;
       connection.query(query, { title: answer.role }, function (err, res) {
-      
           console.table(res);
-         
-        runApp();
-      });
-    });    
+
+          runApp();
+         });
+    });
 }
 
 async function viewEmployeesByDepartment() {
@@ -268,31 +273,23 @@ async function addRole(roleDep) {
         type: "list",
         choices: roleDep.map(a=> ({name: a.name, value:a.id}))
     }]));
-    console.log(dataRole);
     db.addOne("role", dataRole);
-    
+    console.log("Updated New Role");
+    const updrole = await viewAllRoles();
+    console.table(updrole);
+
     runApp();
  }
 
-function viewDepartments(){
-    return connection.query(`SELECT * FROM department`);
- }
-
- function viewAllRoles(){
-    return connection.query(`SELECT * FROM role`);
-}
-
 async function addDepartment() {
-    inquirer
-    .prompt(prompts.departmentAdd)
-    .then(function (answer) {
-        let query = `INSERT INTO department (name) VALUES (?)`;
-        connection.query(query, answer.newdepartment, function (err, res) {
-        console.table(res);
+    const dataDepartAdd = await inquirer.prompt(prompts.departmentAdd)
+    console.log(dataDepartAdd);
+        db.addOne("department", dataDepartAdd);
+        console.log("Updated New Department");
+        const updepart = await viewDepartments();
+        console.table(updepart);
         
         runApp();
-        });
-    });
 }
 
 async function addEmployee(empRole) {
@@ -303,8 +300,10 @@ async function addEmployee(empRole) {
           message: "Enter your role name.",
           choices: empRole.map(b=> ({name: b.title, value: b.id}))
         }]));
-        console.log(dataEmp);
         db.addOne("employee", dataEmp);
+        const upemp = await db.viewAllEmployees();
+        console.log("Updated New Employee");
+        console.table(upemp)
         
         runApp();
 }
@@ -332,6 +331,7 @@ async function updateEmployeeRole(empList, empRole) {
             if (err) throw err;
         });
         const newemp = await db.viewAllEmployees();
+        console.log("Updated Employee Role");
         console.table(newemp);
         
         runApp();
